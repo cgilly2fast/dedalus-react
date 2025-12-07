@@ -17,7 +17,7 @@ import { useChat } from "dedalus-react/react";
 
 function Chat() {
   const { messages, sendMessage, status, stop } = useChat({
-    api: "/api/chat",
+    transport: { api: "/api/chat" },
   });
 
   return (
@@ -112,25 +112,40 @@ export async function POST(req: Request) {
 
 ### `useChat(options)`
 
-| Option      | Type       | Description                        |
-| ----------- | ---------- | ---------------------------------- |
-| `api`       | `string`   | **Required.** API endpoint         |
-| `id`        | `string`   | Chat session ID                    |
-| `messages`  | `Message[]`| Initial messages                   |
-| `headers`   | `object`   | Additional request headers         |
-| `onError`   | `function` | Error callback                     |
-| `onFinish`  | `function` | Completion callback                |
+| Option | Type | Description |
+| --- | --- | --- |
+| `transport` | `TransportConfig` | **Required.** Transport configuration (see below) |
+| `id` | `string` | Chat session ID |
+| `messages` | `Message[]` | Initial messages |
+| `generateId` | `() => string` | Custom ID generator (defaults to `crypto.randomUUID`) |
+| `onError` | `(error: Error) => void` | Error callback |
+| `onFinish` | `(opts: OnFinishOptions) => void` | Completion callback |
+| `onToolCall` | `(opts: OnToolCallOptions) => void \| Promise<void>` | Tool call callback |
+| `sendAutomaticallyWhen` | `(opts) => boolean \| Promise<boolean>` | Auto-send condition for agentic flows |
+
+#### `TransportConfig`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `api` | `string \| () => string` | **Required.** API endpoint |
+| `headers` | `object \| Headers \| () => object` | Additional request headers |
+| `credentials` | `RequestCredentials \| () => RequestCredentials` | Fetch credentials mode |
+| `body` | `object \| () => object` | Additional body properties merged into requests |
+| `fetch` | `typeof fetch` | Custom fetch function |
+| `prepareRequestBody` | `(opts) => object` | Transform the request body before sending |
 
 **Returns:**
 
-| Property      | Type       | Description                        |
-| ------------- | ---------- | ---------------------------------- |
-| `messages`    | `Message[]`| Current messages                   |
-| `status`      | `string`   | `ready`, `submitted`, `streaming`, or `error` |
-| `error`       | `Error`    | Current error (if any)             |
-| `sendMessage` | `function` | Send a message                     |
-| `setMessages` | `function` | Update messages                    |
-| `stop`        | `function` | Stop streaming                     |
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Chat session ID |
+| `messages` | `Message[]` | Current messages |
+| `status` | `string` | `ready`, `submitted`, `streaming`, or `error` |
+| `error` | `Error \| undefined` | Current error (if any) |
+| `sendMessage` | `(message: Message \| string, options?: ChatRequestOptions) => Promise<void>` | Send a message |
+| `setMessages` | `(messages: Message[] \| (prev: Message[]) => Message[]) => void` | Update messages |
+| `stop` | `() => void` | Stop streaming |
+| `addToolResult` | `(opts: AddToolResultOptions) => void` | Add a tool result to the conversation |
 
 ## Examples
 

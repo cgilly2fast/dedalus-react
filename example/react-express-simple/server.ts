@@ -8,6 +8,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import Dedalus, { DedalusRunner } from "dedalus-labs";
+import { pipeStreamToResponse } from "../../src/server";
 
 const app = express();
 const port = 3001;
@@ -32,27 +33,14 @@ app.post("/api/chat", async (req, res) => {
 
     console.log("Received messages:", messages);
 
-    // Set SSE headers
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    });
-
     // Run with streaming
-    const result = await runner.run({
+    const stream = await runner.run({
       messages,
-      model: "openai/gpt-5",
+      model: "openai/gpt-4o-mini",
       stream: true,
     });
 
-    // Stream the response
-    for await (const chunk of result as AsyncIterableIterator<any>) {
-      res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-    }
-
-    res.write(`data: [DONE]\n\n`);
-    res.end();
+    await pipeStreamToResponse(stream, res);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal server error" });

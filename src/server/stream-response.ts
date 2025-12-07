@@ -2,11 +2,18 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GenericStreamChunk = Record<string, any>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DedalusRunnerResult = AsyncIterable<GenericStreamChunk> | Record<string, any>;
+
 export interface StreamResponseOptions {
   /**
    * Additional headers to include in the response
    */
   headers?: Record<string, string>;
+}
+
+function isAsyncIterable(value: unknown): value is AsyncIterable<GenericStreamChunk> {
+  return value != null && typeof value === "object" && Symbol.asyncIterator in value;
 }
 
 /**
@@ -15,7 +22,7 @@ export interface StreamResponseOptions {
  *
  * @example Express
  * ```ts
- * import { createStreamResponse } from 'dedalus-react/server'
+ * import { createStreamResponse } from '../../../src/server'
  * import Dedalus from 'dedalus-labs'
  *
  * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
@@ -44,7 +51,7 @@ export interface StreamResponseOptions {
  *
  * @example Next.js App Router
  * ```ts
- * import { createStreamResponse } from 'dedalus-react/server'
+ * import { createStreamResponse } from '../../../src/server'
  * import Dedalus from 'dedalus-labs'
  *
  * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
@@ -63,9 +70,16 @@ export interface StreamResponseOptions {
  * ```
  */
 export function createStreamResponse(
-  stream: AsyncIterable<GenericStreamChunk>,
+  result: DedalusRunnerResult,
   options: StreamResponseOptions = {},
 ): Response {
+  if (!isAsyncIterable(result)) {
+    throw new Error(
+      "createStreamResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
+    );
+  }
+
+  const stream = result;
   const encoder = new TextEncoder();
 
   const readableStream = new ReadableStream({
@@ -100,7 +114,7 @@ export function createStreamResponse(
  *
  * @example
  * ```ts
- * import { pipeStreamToResponse } from 'dedalus-react/server'
+ * import { pipeStreamToResponse } from '../../../src/server'
  * import Dedalus from 'dedalus-labs'
  *
  * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
@@ -119,7 +133,7 @@ export function createStreamResponse(
  * ```
  */
 export async function pipeStreamToResponse(
-  stream: AsyncIterable<GenericStreamChunk>,
+  result: DedalusRunnerResult,
   res: {
     writeHead: (status: number, headers: Record<string, string>) => void;
     write: (chunk: string) => void;
@@ -127,6 +141,14 @@ export async function pipeStreamToResponse(
   },
   options: StreamResponseOptions = {},
 ): Promise<void> {
+  if (!isAsyncIterable(result)) {
+    throw new Error(
+      "pipeStreamToResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
+    );
+  }
+
+  const stream = result;
+
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
