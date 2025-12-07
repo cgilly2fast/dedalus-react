@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Dedalus Chat Example",
@@ -15,23 +16,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <style>{`
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            background-color: #000705;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-              Oxygen, Ubuntu, Cantarell, sans-serif;
-          }
-          input::placeholder {
-            color: #3b3a35;
-          }
-        `}</style>
-      </head>
       <body>{children}</body>
     </html>
   );
