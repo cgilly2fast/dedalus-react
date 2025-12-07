@@ -132,14 +132,25 @@ export async function POST(req: Request) {
 | `setMessages` | `function` | Update messages                    |
 | `stop`        | `function` | Stop streaming                     |
 
-## Example
+## Examples
+
+The `example/` directory contains working examples for different setups:
+
+| Example | Description |
+| ------- | ----------- |
+| [next-simple](./example/next-simple) | Minimal Next.js App Router example |
+| [next-model-select](./example/next-model-select) | Next.js with dynamic model selection |
+| [react-express-simple](./example/react-express-simple) | Minimal React + Express example |
+| [react-express-model-select](./example/react-express-model-select) | React + Express with model selection |
+
+### Running an Example
 
 ```bash
-cd example
+cd example/next-simple  # or any other example
 pnpm install
-cp .env.example .env
-# Add your API key to .env
-pnpm start
+cp .env.example .env.local  # use .env for Express examples
+# Add your DEDALUS_API_KEY to the env file
+pnpm dev  # or pnpm start for Express examples
 ```
 
 ## License
