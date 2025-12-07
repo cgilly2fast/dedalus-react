@@ -2,6 +2,8 @@
 
 React hooks for building chat interfaces with [Dedalus](https://dedaluslabs.ai).
 
+![Dedalus React](https://firmware.ai/api/media/file/dedalus-model-select-example.png)
+
 ## Installation
 
 ```bash
