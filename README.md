@@ -90,7 +90,7 @@ export async function POST(req: Request) {
 
 ## API
 
-### `useChat(options)`
+### `useChat(options)` Params
 
 | Option | Type | Description |
 | --- | --- | --- |
@@ -103,18 +103,7 @@ export async function POST(req: Request) {
 | `onToolCall` | `(opts: OnToolCallOptions) => void \| Promise<void>` | Tool call callback |
 | `sendAutomaticallyWhen` | `(opts) => boolean \| Promise<boolean>` | Auto-send condition for agentic flows |
 
-#### `TransportConfig`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `api` | `string \| () => string` | **Required.** API endpoint |
-| `headers` | `object \| Headers \| () => object` | Additional request headers |
-| `credentials` | `RequestCredentials \| () => RequestCredentials` | Fetch credentials mode |
-| `body` | `object \| () => object` | Additional body properties merged into requests |
-| `fetch` | `typeof fetch` | Custom fetch function |
-| `prepareRequestBody` | `(opts) => object` | Transform the request body before sending |
-
-**Returns:**
+#### Returns
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -126,6 +115,48 @@ export async function POST(req: Request) {
 | `setMessages` | `(messages: Message[] \| (prev: Message[]) => Message[]) => void` | Update messages |
 | `stop` | `() => void` | Stop streaming |
 | `addToolResult` | `(opts: AddToolResultOptions) => void` | Add a tool result to the conversation |
+
+#### `TransportConfig`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `api` | `string \| () => string` | **Required.** API endpoint |
+| `headers` | `object \| Headers \| () => object` | Additional request headers |
+| `credentials` | `RequestCredentials \| () => RequestCredentials` | Fetch credentials mode |
+| `body` | `object \| () => object` | Additional body properties merged into requests |
+| `fetch` | `typeof fetch` | Custom fetch function |
+| `prepareRequestBody` | `(opts) => object` | Transform the request body before sending |
+
+#### `OnFinishOptions`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `message` | `Message` | The final assistant message |
+| `messages` | `Message[]` | All messages in the conversation including the final assistant message |
+| `isAbort` | `boolean` | True if the request was aborted by the user |
+| `isDisconnect` | `boolean` | True if a network error caused disconnection |
+| `isError` | `boolean` | True if an error occurred during streaming |
+
+#### `OnToolCallOptions`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `toolCall` | `ToolCall` | The tool call received from the assistant |
+
+#### `ToolCall`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique identifier for this tool call |
+| `type` | `"function"` | The type of tool call |
+| `function` | `{ name: string; arguments: string }` | The function name and JSON-encoded arguments |
+
+#### `SendAutomaticallyWhenOptions`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `messages` | `Message[]` | Current messages in the conversation |
+
 
 ## Examples
 
