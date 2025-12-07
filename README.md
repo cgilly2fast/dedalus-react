@@ -13,7 +13,7 @@ pnpm add dedalus-react dedalus-labs
 ### Client (React)
 
 ```tsx
-import { useChat } from "dedalus-react/react";
+import { useChat } from "dedalus-react";
 
 function Chat() {
   const { messages, sendMessage, status, stop } = useChat({

@@ -1,3 +1,3 @@
-// Main entry point - exports both react and server utilities
+// Main entry point - exports React utilities
+// Server utilities are available via "dedalus-react/server"
 export * from "./react";
-export * from "./server";
