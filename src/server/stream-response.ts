@@ -17,65 +17,44 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<GenericStreamCh
 }
 
 /**
- * Create an SSE streaming response from a Dedalus stream.
- * Compatible with the useChat hook on the client.
+ * Stream a Dedalus response to a Web standard Response.
  *
- * @example Express
- * ```ts
- * import { createStreamResponse } from '../../../src/server'
- * import Dedalus from 'dedalus-labs'
+ * Use this for environments that use the Web Fetch API:
+ * - Next.js App Router
+ * - Cloudflare Workers
+ * - Deno
+ * - Bun
  *
- * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
- *
- * app.post('/api/chat', async (req, res) => {
- *   const { messages } = req.body
- *
- *   const stream = await client.chat.completions.create({
- *     model: 'openai/gpt-4o-mini',
- *     messages,
- *     stream: true,
- *   })
- *
- *   const response = createStreamResponse(stream)
- *
- *   res.writeHead(200, Object.fromEntries(response.headers.entries()))
- *   const reader = response.body!.getReader()
- *   while (true) {
- *     const { done, value } = await reader.read()
- *     if (done) break
- *     res.write(value)
- *   }
- *   res.end()
- * })
- * ```
+ * For Node.js frameworks like Express or Fastify, use `streamToNodeResponse` instead.
  *
  * @example Next.js App Router
  * ```ts
- * import { createStreamResponse } from '../../../src/server'
- * import Dedalus from 'dedalus-labs'
+ * import { streamToWebResponse } from 'dedalus-react/server'
+ * import Dedalus, { DedalusRunner } from 'dedalus-labs'
  *
- * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
+ * const client = new Dedalus()
+ * const runner = new DedalusRunner(client)
  *
  * export async function POST(req: Request) {
  *   const { messages } = await req.json()
  *
- *   const stream = await client.chat.completions.create({
+ *   const stream = await runner.run({
  *     model: 'openai/gpt-4o-mini',
  *     messages,
  *     stream: true,
  *   })
  *
- *   return createStreamResponse(stream)
+ *   return streamToWebResponse(stream)
  * }
  * ```
  */
-export function createStreamResponse(
+export function streamToWebResponse(
   result: DedalusRunnerResult,
   options: StreamResponseOptions = {},
 ): Response {
   if (!isAsyncIterable(result)) {
     throw new Error(
-      "createStreamResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
+      "streamToWebResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
     );
   }
 
@@ -109,30 +88,37 @@ export function createStreamResponse(
 }
 
 /**
- * Pipe a Dedalus stream to an Express/Node response object.
- * Handles SSE formatting automatically.
+ * Stream a Dedalus response to a Node.js response object.
  *
- * @example
+ * Use this for Node.js HTTP frameworks:
+ * - Express
+ * - Fastify
+ * - Node.js built-in `http` module
+ *
+ * For Next.js App Router, Cloudflare Workers, Deno, or Bun, use `streamToWebResponse` instead.
+ *
+ * @example Express
  * ```ts
- * import { pipeStreamToResponse } from '../../../src/server'
- * import Dedalus from 'dedalus-labs'
+ * import { streamToNodeResponse } from 'dedalus-react/server'
+ * import Dedalus, { DedalusRunner } from 'dedalus-labs'
  *
- * const client = new Dedalus({ apiKey: process.env.DEDALUS_API_KEY })
+ * const client = new Dedalus()
+ * const runner = new DedalusRunner(client)
  *
  * app.post('/api/chat', async (req, res) => {
  *   const { messages } = req.body
  *
- *   const stream = await client.chat.completions.create({
+ *   const stream = await runner.run({
  *     model: 'openai/gpt-4o-mini',
  *     messages,
  *     stream: true,
  *   })
  *
- *   await pipeStreamToResponse(stream, res)
+ *   await streamToNodeResponse(stream, res)
  * })
  * ```
  */
-export async function pipeStreamToResponse(
+export async function streamToNodeResponse(
   result: DedalusRunnerResult,
   res: {
     writeHead: (status: number, headers: Record<string, string>) => void;
@@ -143,7 +129,7 @@ export async function pipeStreamToResponse(
 ): Promise<void> {
   if (!isAsyncIterable(result)) {
     throw new Error(
-      "pipeStreamToResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
+      "streamToNodeResponse requires a streaming result. Make sure to pass stream: true to runner.run()",
     );
   }
 

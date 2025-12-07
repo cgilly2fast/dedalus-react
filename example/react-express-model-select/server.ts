@@ -5,7 +5,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import Dedalus, { DedalusRunner } from "dedalus-labs";
-import { pipeStreamToResponse } from "../../src/server";
+import { streamToNodeResponse } from "../../src/server";
 
 const app = express();
 const port = 3001;
@@ -31,7 +31,7 @@ app.post("/api/chat", async (req, res) => {
       stream: true,
     });
 
-    await pipeStreamToResponse(stream, res);
+    await streamToNodeResponse(stream, res);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -5,7 +5,7 @@
  */
 import { NextRequest } from "next/server";
 import Dedalus, { DedalusRunner } from "dedalus-labs";
-import { createStreamResponse } from "../../../../../src/server";
+import { streamToWebResponse } from "../../../../../src/server";
 
 // Ensure api key is set by copying .env.example to .env and adding your API key
 const client = new Dedalus();
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       stream: true,
     });
 
-    return createStreamResponse(stream);
+    return streamToWebResponse(stream);
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ error: "Internal server error" }), {

@@ -38,9 +38,12 @@ function Chat() {
 
 ### Server (Express)
 
+Use `streamToNodeResponse` for Node.js HTTP frameworks like Express, Fastify, or the built-in `http` module.
+
 ```ts
 import express from "express";
 import Dedalus, { DedalusRunner } from "dedalus-labs";
+import { streamToNodeResponse } from "dedalus-react/server";
 
 const app = express();
 const client = new Dedalus();
@@ -49,31 +52,23 @@ const runner = new DedalusRunner(client);
 app.post("/api/chat", async (req, res) => {
   const { messages } = req.body;
 
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-
-  const result = await runner.run({
+  const stream = await runner.run({
     messages,
     model: "openai/gpt-4o-mini",
     stream: true,
   });
 
-  for await (const chunk of result as AsyncIterableIterator<any>) {
-    res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-  }
-
-  res.write(`data: [DONE]\n\n`);
-  res.end();
+  await streamToNodeResponse(stream, res);
 });
 ```
 
 ### Server (Next.js App Router)
 
+Use `streamToWebResponse` for environments using the Web Fetch API, including Next.js App Router, Cloudflare Workers, Deno, and Bun.
+
 ```ts
 import Dedalus, { DedalusRunner } from "dedalus-labs";
+import { streamToWebResponse } from "dedalus-react/server";
 
 const client = new Dedalus();
 const runner = new DedalusRunner(client);
@@ -81,30 +76,13 @@ const runner = new DedalusRunner(client);
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const result = await runner.run({
+  const stream = await runner.run({
     messages,
     model: "openai/gpt-4o-mini",
     stream: true,
   });
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      for await (const chunk of result as AsyncIterableIterator<any>) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-      }
-      controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
-      controller.close();
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+  return streamToWebResponse(stream);
 }
 ```
 
